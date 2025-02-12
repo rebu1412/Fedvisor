@@ -1,1 +1,1 @@
-gdown
+google-generativeai
