@@ -1,6 +1,5 @@
 import streamlit as st
 import sqlite3
-from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
 
 st.set_page_config(layout="wide")
@@ -8,8 +7,6 @@ st.set_page_config(layout="wide")
 # Cấu hình API của Gemini
 genai.configure(api_key= st.secrets["API_KEY"])
 
-# Khởi tạo mô hình embedding
-embeddings_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Danh sách chủ đề (Giữ lại "Tất cả" và "Khác")
 TOPIC_OPTIONS = ["Tất cả", "Học phí", "Tuyển sinh", "Học bổng", "Chương trình đào tạo", "Khác"]
