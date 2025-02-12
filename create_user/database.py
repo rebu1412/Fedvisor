@@ -30,43 +30,28 @@ def check_login(username, password):
     return user
 
 # Thêm thông tin hành chính với ID tự động tăng
-def add_admin_info(title, content):
-    conn = sqlite3.connect("data/data.db")
-    cursor = conn.cursor()
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    cursor.execute(
-        "INSERT INTO admin_info (title, content, created_at) VALUES (?, ?, ?)", 
-        (title, content, created_at)
-    )
-    
-    conn.commit()
-    conn.close()
+def add_admin_info(title, content, topic):
+    with sqlite3.connect("data/data.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO admin_info (title, content, topic, created_at) VALUES (?, ?, ?, datetime('now'))",
+                       (title, content, topic))
+        conn.commit()
 
 # Lấy danh sách thông tin hành chính
 def get_admin_info():
-    conn = sqlite3.connect("data/data.db")
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT info_id, title, content, created_at FROM admin_info ORDER BY created_at DESC")
-    data = cursor.fetchall()
-    
-    conn.close()
-    return data
+    with sqlite3.connect("data/data.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT info_id, title, content, topic, created_at FROM admin_info ORDER BY created_at DESC")
+        return cursor.fetchall()
 
 
 # Cập nhật thông tin hành chính
-def update_admin_info(info_id, title, content):
-    conn = sqlite3.connect("data/data.db")
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        "UPDATE admin_info SET title = ?, content = ? WHERE info_id = ?", 
-        (title, content, info_id)
-    )
-    
-    conn.commit()
-    conn.close()
+def update_admin_info(info_id, new_title, new_content, new_topic):
+    with sqlite3.connect("data/data.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE admin_info SET title = ?, content = ?, topic = ? WHERE id = ?",
+                       (new_title, new_content, new_topic, info_id))
+        conn.commit()
 
 
 # Xóa thông tin hành chính
@@ -78,4 +63,3 @@ def delete_admin_info(info_id):
     
     conn.commit()
     conn.close()
-
