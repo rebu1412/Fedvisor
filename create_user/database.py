@@ -2,9 +2,12 @@ import sqlite3
 import hashlib
 from datetime import datetime
 
+def connect_db():
+    return sqlite3.connect("data/data.db", check_same_thread=False)
+
 # Tạo tài khoản mới
 def create_user(username, password, role, user_code, name, email, major):
-    conn = sqlite3.connect("data/data.db")
+    conn = connect_db()
     cursor = conn.cursor()
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     try:
@@ -21,7 +24,7 @@ def create_user(username, password, role, user_code, name, email, major):
 
 # Kiểm tra đăng nhập
 def check_login(username, password):
-    conn = sqlite3.connect("data/data.db")
+    conn = connect_db()
     cursor = conn.cursor()
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     cursor.execute("SELECT * FROM users WHERE username = ? AND password_hash = ?", (username, password_hash))
@@ -56,10 +59,91 @@ def update_admin_info(info_id, new_title, new_content, new_topic):
 
 # Xóa thông tin hành chính
 def delete_admin_info(info_id):
-    conn = sqlite3.connect("data/data.db")
+    conn = connect_db()
     cursor = conn.cursor()
     
     cursor.execute("DELETE FROM admin_info WHERE info_id = ?", (info_id,))
     
+    conn.commit()
+    conn.close()
+
+
+# Thêm công việc mới
+def add_job(title, company, requirements, salary, job_type, job_code):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO jobs (title, company, requirements, salary, job_type, job_code) VALUES (?, ?, ?, ?, ?, ?)",
+                   (title, company, requirements, salary, job_type, job_code))
+    conn.commit()
+    conn.close()
+
+# Lấy danh sách công việc
+def get_jobs():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT job_id, title, company, requirements, salary, job_type, created_at, job_code FROM jobs ORDER BY created_at DESC")
+    jobs = cursor.fetchall()
+    conn.close()
+    return jobs
+
+# Cập nhật thông tin công việc (bao gồm cả mã công việc)
+def update_job(job_id, title, company, requirements, salary, job_type, job_code):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE jobs SET title=?, company=?, requirements=?, salary=?, job_type=?, job_code=? WHERE job_id=?",
+                   (title, company, requirements, salary, job_type, job_code, job_id))
+    conn.commit()
+    conn.close()
+
+# Xóa công việc
+def delete_job(job_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM jobs WHERE job_id=?", (job_id,))
+    conn.commit()
+    conn.close()
+
+
+def add_news(author, title, category, content):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO news (author, title, category, content, status) 
+        VALUES (?, ?, ?, ?, 'pending')
+    """, (author, title, category, content))
+    conn.commit()
+    conn.close()
+
+def get_news():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM news ORDER BY created_at DESC")
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
+def get_approved_news():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM news WHERE status='approved' ORDER BY created_at DESC")
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
+def update_news(news_id, author, title, category, content, status):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE news 
+        SET author=?, title=?, category=?, content=?, status=? 
+        WHERE id=?
+    """, (author, title, category, content, status, news_id))
+    conn.commit()
+    conn.close()
+
+def delete_news(news_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM news WHERE id=?", (news_id,))
     conn.commit()
     conn.close()

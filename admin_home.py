@@ -1,4 +1,5 @@
 import streamlit as st
+from admin_features.admin_news import admin_news
 from admin_features.admin_info import admin_info
 from admin_features.admin_jobs import admin_jobs
 from admin_features.admin_updates import admin_updates
@@ -19,6 +20,7 @@ def admin_home():
     menu = {
         "Thông tin hành chính": admin_info,
         "Quản lý việc làm": admin_jobs,
+        "Quản lý thông báo": admin_news,
         "Quản lý cập nhật": admin_updates,
         "Quản lý phản hồi": admin_feedback,
         "Xem thống kê": admin_stats

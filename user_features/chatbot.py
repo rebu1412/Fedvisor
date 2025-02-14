@@ -34,8 +34,6 @@ def get_data_from_db(topic_filter):
 
 def chatbot():
     """Giao diện chatbot trong Fedvisor với khả năng chọn topic."""
-    st.title("🤖 Chatbot Hỗ Trợ Sinh Viên")
-    st.write("Chọn chủ đề và nhập câu hỏi để nhận câu trả lời nhanh chóng!")
 
     # Chia giao diện thành 2 cột
     col1, col2 = st.columns([3, 1])

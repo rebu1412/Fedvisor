@@ -5,7 +5,7 @@ def register():
     st.subheader("Đăng ký tài khoản mới")
     username = st.text_input("Tên tài khoản")
     password = st.text_input("Mật khẩu", type="password")
-    role = st.selectbox("Vai trò", ["student", "lecturer", "admin"])
+    role = st.selectbox("Vai trò", ["student", "lecturer"])
     user_code = st.text_input("Mã người dùng")
     name = st.text_input("Họ và tên")
     email = st.text_input("Email")
