@@ -49,7 +49,7 @@ def get_admin_info():
 def update_admin_info(info_id, new_title, new_content, new_topic):
     with sqlite3.connect("data/data.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("UPDATE admin_info SET title = ?, content = ?, topic = ? WHERE id = ?",
+        cursor.execute("UPDATE admin_info SET title = ?, content = ?, topic = ? WHERE info_id = ?",
                        (new_title, new_content, new_topic, info_id))
         conn.commit()
 

@@ -1,10 +1,10 @@
 import streamlit as st
-from features.chat_channel import chat_channel
-from features.chatbot import chatbot
-from features.news import news
-from features.job_notifications import job_notifications
-from features.cv_support import cv_support
-from features.other_features import other_features
+from user_features.chat_channel import chat_channel
+from user_features.chatbot import chatbot
+from user_features.news import news
+from user_features.job_notifications import job_notifications
+from user_features.cv_support import cv_support
+from user_features.other_features import other_features
 
 def home_user():
     if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
