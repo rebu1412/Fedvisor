@@ -147,3 +147,134 @@ def delete_news(news_id):
     cursor.execute("DELETE FROM news WHERE id=?", (news_id,))
     conn.commit()
     conn.close()
+
+def add_feedback(user_id, topic, content):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO forum_posts (user_id, topic, content) VALUES (?, ?, ?)", (user_id, topic, content))
+    conn.commit()
+    conn.close()
+
+def get_feedbacks():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT f.post_id, u.username, f.topic, f.content, f.created_at
+        FROM forum_posts f
+        JOIN users u ON f.user_id = u.user_id
+        ORDER BY f.created_at DESC
+    """)
+    feedbacks = cursor.fetchall()
+    conn.close()
+    return feedbacks
+
+def add_comment(user_id, post_id, content):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)", (post_id, user_id, content))
+    conn.commit()
+    conn.close()
+
+def get_comments(post_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.comment_id, c.post_id, u.username, c.content, c.created_at
+        FROM comments c
+        JOIN users u ON c.user_id = u.user_id
+        WHERE c.post_id = ?
+        ORDER BY c.created_at ASC
+    """, (post_id,))
+    comments = cursor.fetchall()
+    conn.close()
+    return comments
+
+def delete_feedback(post_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM forum_posts WHERE post_id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+
+def get_all_users():
+    """Lấy danh sách tất cả người dùng từ database"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id, username, password_hash, role FROM users")  # Đảm bảo lấy cả 'role'
+    users = cursor.fetchall()
+    return users
+
+
+def track_usage(action):
+    """Cập nhật số lần sử dụng của một chức năng, gộp chung 'view_job_*'"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    # Nếu action bắt đầu bằng 'view_job_', thì gộp vào nhóm chung 'view_job'
+    if action.startswith("view_job_"):
+        action = "view_job"  # Đổi tất cả thành 'view_job'
+
+    cursor.execute("INSERT INTO usage_tracking (action, count) VALUES (?, 1) "
+                   "ON CONFLICT(action) DO UPDATE SET count = count + 1", (action,))
+    
+    conn.commit()
+    conn.close()
+
+def get_usage_stats():
+    """Lấy dữ liệu thống kê và gộp nhóm các mục view_job"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT action, count FROM usage_tracking")
+    data = cursor.fetchall()
+    
+    conn.close()
+
+    # Định nghĩa tên hiển thị
+    action_labels = {
+        "chatbot_usage": "Chatbot hành chính",
+        "job_chatbot_query": "Chatbot công việc",
+        "feedback_submitted": "Feedback",
+        "comment_submitted": "Comment",
+        "view_job": "Xem thông tin việc làm",
+        "user_home": "Đăng nhập"
+    }
+
+    # Xử lý dữ liệu
+    formatted_data = {}
+    job_view_count = 0
+
+    for action, count in data:
+        if action.startswith("view_job_"):
+            job_view_count += count  # Gộp tất cả 'view_job_*' vào 'view_job'
+        else:
+            formatted_data[action_labels.get(action, action)] = count
+
+    if job_view_count > 0:
+        formatted_data["Xem thông tin việc làm"] = job_view_count
+
+    return formatted_data
+
+def update_user_info(user_id, username, role):
+    """Cập nhật thông tin username và role"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET username = ?, role = ? WHERE user_id = ?", (username, role, user_id))
+    conn.commit()
+    conn.close()
+
+def update_user_password(user_id, new_password):
+    """Cập nhật mật khẩu người dùng"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (new_password, user_id))
+    conn.commit()
+    conn.close()
+
+def delete_user(user_id):
+    """Xóa tài khoản khỏi database"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()

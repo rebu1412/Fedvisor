@@ -1,6 +1,7 @@
 import streamlit as st
 from create_user.database import create_user, check_login
 
+
 def register():
     st.subheader("Đăng ký tài khoản mới")
     username = st.text_input("Tên tài khoản")
@@ -29,7 +30,13 @@ def login():
         user = check_login(username, password)
         if user:
             st.session_state["logged_in"] = True
-            st.session_state["user"] = user
+            st.session_state["user_id"] = user[0]  # Lưu user_id
+            st.session_state["username"] = user[1]  # Lưu tên tài khoản
+            st.session_state["role"] = user[2]  # Lưu vai trò
+            st.session_state["user"] = user  # Lưu toàn bộ thông tin user
+            st.success(f"🎉 Chào mừng {user[1]}!")
             st.rerun()
         else:
             st.error("Tên tài khoản hoặc mật khẩu không đúng.")
+
+
