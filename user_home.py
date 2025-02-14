@@ -9,7 +9,7 @@ from user_features.other_features import other_features
 # Sidebar với logo FPT
 st.sidebar.image(
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-9Qh2rJaKcHthgCzbqkeZ2GWJJmcT2M4oXA&s',
-    use_column_width=True
+    use_container_width=True
 )
 
 def home_user():
@@ -22,7 +22,7 @@ def home_user():
     # Sidebar với logo FPT
     st.sidebar.image(
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-9Qh2rJaKcHthgCzbqkeZ2GWJJmcT2M4oXA&s',
-        use_column_width=True
+        use_container_width=True
     )
     st.markdown(
         """
