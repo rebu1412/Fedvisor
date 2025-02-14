@@ -35,13 +35,13 @@ def admin_dashboard():
             col1, col2 = st.columns(2)
             with col1:
                 if st.button(f"📝 Cập nhật ({info_id})"):
-                    if st.confirm(f"Bạn có chắc muốn cập nhật thông tin '{title}'?"):
+                    if st.button(f"Xác nhận cập nhật thông tin '{title}'"):
                         update_admin_info(info_id, new_title, new_content, new_topic)
                         st.success("✅ Cập nhật thành công!")
                         st.rerun()
             with col2:
                 if st.button(f"🗑️ Xóa ({info_id})"):
-                    if st.confirm(f"⚠ Bạn có chắc muốn xóa '{title}'? Hành động này không thể hoàn tác!"):
+                    if st.button(f"⚠ Bạn có chắc muốn xóa '{title}'? Hành động này không thể hoàn tác!"):
                         delete_admin_info(info_id)
                         st.warning("⚠ Đã xóa thông tin này!")
                         st.rerun()
