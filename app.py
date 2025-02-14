@@ -3,8 +3,6 @@ from login.auth import register, login
 from user_home import home_user
 from admin_home import admin_home
 
-st.title("Fedvisor - Nền tảng học tập")
-
 menu = ["Đăng nhập", "Đăng ký"]
 
 if st.session_state.get("logged_in", False):

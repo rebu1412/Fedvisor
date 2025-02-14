@@ -4,7 +4,7 @@ from create_user.database import add_admin_info, get_admin_info, update_admin_in
 # Danh sách chủ đề cố định
 TOPIC_OPTIONS = ["Học phí", "Tuyển sinh", "Học bổng", "Chương trình đào tạo", "Khác"]
 
-def admin_dashboard():
+def admin_info():
     st.subheader("📌 Quản lý Thông tin Hành chính")
 
     # Thêm thông tin hành chính
