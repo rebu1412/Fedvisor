@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import google.generativeai as genai
 import re
+from create_user.database import track_usage
 
 # Cấu hình API của Gemini
 genai.configure(api_key=st.secrets["API_KEY"])
@@ -57,7 +58,9 @@ def job_chatbot():
     user_query = st.text_input("✍️ Nhập câu hỏi của bạn:")
 
     if user_query:
+        track_usage("job_chatbot_query")  # Đếm số lượt hỏi chatbot.
         prompt = process_user_query(user_query)
+        
         try:
             llm = genai.GenerativeModel('gemini-1.5-flash')
             response = llm.generate_content(prompt)

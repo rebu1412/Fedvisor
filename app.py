@@ -3,6 +3,9 @@ from login.auth import register, login
 from user_home import home_user
 from admin_home import admin_home
 
+# Kiểm tra đăng nhập
+user = st.session_state.get("user")
+
 menu = ["Đăng nhập", "Đăng ký"]
 
 if st.session_state.get("logged_in", False):

@@ -15,3 +15,4 @@ def update_jobs_table():
     conn.close()
 
 update_jobs_table()
+    
