@@ -60,11 +60,14 @@ def job_chatbot():
     if user_query:
         track_usage("job_chatbot_query")  # Đếm số lượt hỏi chatbot.
 
-        # Tạo prompt tối ưu hóa cho việc tư vấn nghề nghiệp
+        # Lấy thông tin từ database nếu có mã công việc trong câu hỏi
+        job_context = process_user_query(user_query)
+
+        # Tạo prompt với ngữ cảnh công việc
         prompt = f"""
         Bạn là một chatbot tư vấn nghề nghiệp thông minh. Hãy trả lời câu hỏi dưới đây một cách chuyên nghiệp, chính xác và ngắn gọn.
-        
-        1. Nếu câu hỏi liên quan đến **một công việc cụ thể**, hãy cung cấp thông tin về:
+
+        1. Nếu câu hỏi liên quan đến **một công việc cụ thể**, hãy cung cấp thông tin chi tiết về:
            - Mô tả công việc
            - Kỹ năng cần thiết
            - Mức lương trung bình
@@ -76,7 +79,11 @@ def job_chatbot():
 
         4. Tránh trả lời các câu hỏi không liên quan đến việc làm.
 
-        Câu hỏi của người dùng: {user_query}
+        Dưới đây là thông tin liên quan đến câu hỏi (nếu có):
+
+        {job_context}
+
+        ❓ **Câu hỏi:** {user_query}
         """
 
         try:
@@ -86,4 +93,6 @@ def job_chatbot():
             st.success(response.text)
         except Exception as e:
             st.error(f"Lỗi kết nối API: {e}")
+
+
 
