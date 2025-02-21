@@ -12,7 +12,7 @@ def register():
     username = st.text_input("Tên tài khoản")
     password = st.text_input("Mật khẩu", type="password")
     role = st.selectbox("Vai trò", ["student", "lecturer"])
-    user_code = st.text_input("Mã người dùng")
+    user_code = st.text_input("Mã sinh viên")
     name = st.text_input("Họ và tên")
     
     majors = [
