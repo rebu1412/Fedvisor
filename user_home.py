@@ -5,18 +5,21 @@ from user_features.news import news
 from user_features.job_notifications import job_notifications
 from user_features.cv_support import cv_support
 from user_features.other_features import other_features
-from create_user.database import track_usage  # Import hàm theo dõi sử dụng
+from create_user.database import track_usage, track_activity
 
 def home_user():
     """Trang chủ của Fedvisor với thiết kế tối giản hơn."""
     if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
-        st.warning("⚠ Vui lòng đăng nhập để truy cập các tính năng!")
+        st.warning("⚠ Vui lòng đăng nhập!")
         return
 
-    # Chỉ ghi nhận 1 lần sau khi đăng nhập, không ghi nhận khi đăng xuất
-    if "tracked_login" not in st.session_state or st.session_state["tracked_login"] is False:
-        track_usage("user_home")  # Ghi nhận số lần vào trang chủ người dùng
-        st.session_state["tracked_login"] = True  # Đánh dấu đã ghi nhận
+    username = st.session_state.get("username", "unknown_user")
+
+    # Chỉ ghi nhận khi user mới đăng nhập
+    if "tracked_login" not in st.session_state or not st.session_state["tracked_login"]:
+        track_activity(username, "login")
+        track_usage("user_home")  # Theo dõi đăng nhập
+        st.session_state["tracked_login"] = True
 
     # Tiêu đề trang với logo lệch trái
     st.sidebar.image(
@@ -43,16 +46,31 @@ def home_user():
         "🛠️ Tính năng khác": other_features,
         "📢 Kênh Feedback": feedback_channel,
     }
-    
+
+    action_mapping = {
+        "💬 Chatbot": "chatbot",
+        "📰 Tin tức": "news",
+        "💼 Thông báo Việc làm": "job_notifications",
+        "📄 Hỗ trợ làm CV": "cv_support",
+        "🛠️ Tính năng khác": "other_features",
+        "📢 Kênh Feedback": "feedback_channel",
+    }
+
     st.sidebar.markdown("---")  # Đường phân cách
     choice = st.sidebar.radio("📌 **Chọn tính năng**", list(menu.keys()))
 
+    # Ghi nhận hoạt động sử dụng tính năng
+    track_activity(username, f"use_{action_mapping[choice]}")
+
     # Nút đăng xuất
     if st.sidebar.button("🔴 **Đăng xuất**", help="Đăng xuất khỏi hệ thống"):
+        track_activity(username, "logout")  # Ghi nhận hành động logout
         st.session_state["logged_in"] = False
-        st.session_state.pop("user", None)
-        st.session_state["tracked_login"] = False  # Đặt lại để không ghi nhận khi reload
-        st.rerun()  # Refresh trang để trở về đăng nhập
+        st.session_state.pop("session_id", None)  # Xóa session_id
+        st.session_state.pop("tracked_login", None)  # Đặt lại trạng thái login
+        if "user" in st.session_state:
+            st.session_state.pop("user")
+        st.rerun()
 
     # Hiển thị nội dung của mục đã chọn
     menu[choice]()

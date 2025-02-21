@@ -55,6 +55,7 @@ def process_user_query(user_query):
 def job_chatbot():
     """Giao diện chatbot hỗ trợ tìm kiếm thông tin việc làm."""
     st.subheader("💬 Hỏi đáp cùng Chatbot")
+
     user_query = st.text_input("✍️ Nhập câu hỏi của bạn:")
 
     if user_query:

@@ -1,20 +1,23 @@
 import sqlite3
 import hashlib
 from datetime import datetime
+import uuid
+import streamlit as st
+
 
 def connect_db():
     return sqlite3.connect("data/data.db", check_same_thread=False)
 
 # Tạo tài khoản mới
-def create_user(username, password, role, user_code, name, email, major):
+def create_user(username, password, role, user_code, name, major):
     conn = connect_db()
     cursor = conn.cursor()
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     try:
         cursor.execute("""
-            INSERT INTO users (username, password_hash, role, user_code, name, email, major)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (username, password_hash, role, user_code, name, email, major))
+            INSERT INTO users (username, password_hash, role, user_code, name, major)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (username, password_hash, role, user_code, name, major))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -263,18 +266,140 @@ def update_user_info(user_id, username, role):
     conn.commit()
     conn.close()
 
-def update_user_password(user_id, new_password):
-    """Cập nhật mật khẩu người dùng"""
+def update_user_password(username, new_password):
+    """Cập nhật mật khẩu người dùng dựa trên username với mã hóa bảo mật"""
+    # Mã hóa mật khẩu mới
+    hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (new_password, user_id))
+
+    # Kiểm tra xem username có tồn tại không
+    cursor.execute("SELECT COUNT(*) FROM users WHERE username = ?", (username,))
+    if cursor.fetchone()[0] == 0:
+        conn.close()
+        return False  # Trả về False nếu username không tồn tại
+
+    # Cập nhật mật khẩu
+    cursor.execute("UPDATE users SET password_hash = ? WHERE username = ?", (hashed_password, username))
+    conn.commit()
+    conn.close()
+    return True  # Trả về True nếu cập nhật thành công
+
+def delete_user(username):
+    """Xóa tài khoản khỏi database theo username"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     conn.commit()
     conn.close()
 
-def delete_user(user_id):
-    """Xóa tài khoản khỏi database"""
+
+def track_activity(username, action):
+    """Ghi nhận hoạt động của người dùng"""
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if action == "login":
+        session_id = str(uuid.uuid4())  # Tạo session ID mới
+        st.session_state["session_id"] = session_id  # Lưu vào session
+    else:
+        session_id = st.session_state.get("session_id", None)
+
+    # Ghi nhận hoạt động
+    cursor.execute("""
+        INSERT INTO user_activity_tracking (username, action, timestamp, session_id)
+        VALUES (?, ?, ?, ?)
+    """, (username, action, timestamp, session_id))
     conn.commit()
     conn.close()
+
+def get_user_login_info():
+    """Lấy thông tin đăng nhập, tổng số chức năng sử dụng, tổng thời gian hoạt động và chi tiết từng chức năng"""
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    query = """
+        WITH login_times AS (
+            SELECT username, session_id, timestamp AS login_time
+            FROM user_activity_tracking
+            WHERE action = 'login'
+        ),
+        logout_times AS (
+            SELECT username, session_id, timestamp AS logout_time
+            FROM user_activity_tracking
+            WHERE action = 'logout'
+        ),
+        feature_usage AS (
+            SELECT username, session_id, action, timestamp
+            FROM user_activity_tracking
+            WHERE action LIKE 'use_%'
+        )
+        SELECT 
+            l.username,
+            COUNT(DISTINCT l.session_id) AS total_logins,
+            COUNT(DISTINCT f.action) AS total_features_used,
+            ROUND(SUM(
+                CASE 
+                    WHEN o.logout_time IS NOT NULL THEN 
+                        (julianday(o.logout_time) - julianday(l.login_time)) * 1440
+                    ELSE 
+                        (julianday('now') - julianday(l.login_time)) * 1440
+                END
+            ), 2) AS total_login_minutes,
+            GROUP_CONCAT(f.action || ' (' || 
+                ROUND((julianday(f.timestamp) - julianday(l.login_time)) * 1440, 2) || ' phút)', ' | ') AS feature_details
+        FROM login_times l
+        LEFT JOIN logout_times o 
+        ON l.username = o.username AND l.session_id = o.session_id
+        LEFT JOIN feature_usage f
+        ON l.username = f.username AND l.session_id = f.session_id
+        GROUP BY l.username;
+    """
+    cursor.execute(query)
+    data = cursor.fetchall()
+    conn.close()
+
+    return data
+
+
+
+def log_user_activity(user_id, action):
+    """Ghi log hoạt động của người dùng vào database"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Nếu là đăng nhập, tạo session_id mới
+    if action == "login":
+        session_id = str(uuid.uuid4())  # Tạo session ID ngẫu nhiên
+    else:
+        # Lấy session_id gần nhất của user_id
+        cursor.execute("""
+            SELECT session_id FROM user_activity_tracking 
+            WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1
+        """, (user_id,))
+        session = cursor.fetchone()
+        session_id = session[0] if session else str(uuid.uuid4())  # Nếu chưa có session, tạo mới
+
+    cursor.execute("""
+        INSERT INTO user_activity_tracking (user_id, action, timestamp, session_id)
+        VALUES (?, ?, ?, ?)
+    """, (user_id, action, timestamp, session_id))
+
+    conn.commit()
+    conn.close()
+
+def check_username_exists(username):
+    """Kiểm tra xem tên tài khoản đã tồn tại trong database hay chưa"""
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM users WHERE username = ?", (username,))
+    count = cursor.fetchone()[0]
+    
+    conn.close()
+    return count > 0  # Nếu số lượng > 0, tức là username đã tồn tại
