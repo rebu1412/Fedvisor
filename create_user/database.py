@@ -344,9 +344,9 @@ def get_user_login_info():
             ROUND(SUM(
                 CASE 
                     WHEN o.logout_time IS NOT NULL THEN 
-                        (julianday(o.logout_time) - julianday(l.login_time)) * 1440
+                        (julianday(o.logout_time) - julianday(l.login_time)) * 60
                     ELSE 
-                        (julianday('now') - julianday(l.login_time)) * 1440
+                        (julianday('now') - julianday(l.login_time)) * 60
                 END
             ), 2) AS total_login_minutes,
             GROUP_CONCAT(f.action || ' (' || 
