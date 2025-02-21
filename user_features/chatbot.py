@@ -37,7 +37,6 @@ def chatbot():
 
         if user_query:
             track_usage("chatbot_usage")  # Đếm số lần sử dụng chatbot
-
             # Xây dựng prompt
             if topic_filter == "Tất cả":
                 prompt = (

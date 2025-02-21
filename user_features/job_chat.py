@@ -42,8 +42,8 @@ def process_user_query(user_query):
             f"🏢 **Công ty:** {company}\n"
             f"📂 **Loại công việc:** {job_type}\n"
             f"📅 **Ngày đăng:** {date}\n\n"
-            f"### 📌 Yêu cầu công việc:\n{requirements.replace('•', '\n-')}\n\n"
-            f"### 💰 Quyền lợi được hưởng:\n{salary.replace('•', '\n-')}\n"
+            f"### 📌 Yêu cầu công việc:\n{requirements}\n\n"
+            f"### 💰 Quyền lợi được hưởng:\n{salary}\n"
         )
 
     missing_jobs = set(job_codes) - found_jobs  # Tìm các mã không có trong database
@@ -55,6 +55,7 @@ def process_user_query(user_query):
 def job_chatbot():
     """Giao diện chatbot hỗ trợ tìm kiếm thông tin việc làm."""
     st.subheader("💬 Hỏi đáp cùng Chatbot")
+
     user_query = st.text_input("✍️ Nhập câu hỏi của bạn:")
 
     if user_query:

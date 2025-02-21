@@ -12,7 +12,7 @@ def admin_jobs():
         title = st.text_input("📝 Tên công việc")
         company = st.text_input("🏢 Công ty")
         requirements = st.text_area("📌 Yêu cầu công việc")
-        salary = st.text_input("💰 Mức lương (tùy chọn)")
+        salary = st.text_area("💰 Đãi ngộ")
         job_type = st.selectbox("📂 Loại công việc", JOB_TYPES)
 
         if st.button("✅ Lưu Việc làm"):

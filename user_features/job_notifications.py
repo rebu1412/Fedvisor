@@ -4,7 +4,6 @@ from user_features.job_chat import job_chatbot
 
 def job_notifications():
     st.title("💼 Cơ hội Việc làm")
-    
     col1, col2 = st.columns([3, 1])
     
     with col1:

@@ -1,12 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from create_user.database import get_usage_stats, get_all_users, update_user_password, delete_user, update_user_info
-
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from create_user.database import get_usage_stats, get_all_users
+from create_user.database import get_usage_stats, get_all_users, update_user_password, delete_user, update_user_info, get_user_login_info
 
 def admin_stats():
     """📊 Bảng Điều Khiển Quản Trị"""
@@ -15,6 +10,7 @@ def admin_stats():
     # 📥 Lấy dữ liệu từ database
     users = get_all_users()  # Trả về danh sách [(user_id, username, password, role)]
     usage_stats = get_usage_stats()  # Trả về danh sách {'Chức năng': Số lần sử dụng}
+    user_login_info = get_user_login_info()  # Trả về danh sách [(user_id, username, chức năng, tổng thời gian đăng nhập)]
 
     # 🏆 Tổng số tài khoản
     total_users = len(users)
@@ -39,7 +35,7 @@ def admin_stats():
     df_usage = pd.DataFrame(list(usage_stats.items()), columns=["Chức năng", "Số lần sử dụng"])
 
     # Tabs chia báo cáo theo từng nhóm
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Tổng quan", "📌 Chatbot & Feedback", "💼 Việc làm", "🔑 Quản lý tài khoản"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Tổng quan", "📌 Chatbot & Feedback", "💼 Việc làm", "🔑 Quản lý tài khoản", "📜 Lịch sử đăng nhập"])
 
     # 🚀 **Tab 1: Tổng quan với Biểu đồ**
     with tab1:
@@ -59,7 +55,6 @@ def admin_stats():
             st.plotly_chart(fig_pie, use_container_width=True)
         else:
             st.info("📭 Chưa có dữ liệu thống kê.")
-
 
     # 🚀 **Tab 2: Chi tiết Chatbot & Feedback**
     with tab2:
@@ -81,40 +76,80 @@ def admin_stats():
         st.subheader("🔑 Quản lý tài khoản")
         if users:
             df_users = pd.DataFrame(users, columns=["User ID", "Tên tài khoản", "Mật khẩu", "Vai trò"])
-
-            # 🔒 Ẩn mật khẩu (hiển thị ****)
             df_users["Mật khẩu"] = "******"
 
-            # Hiển thị bảng có thể chỉnh sửa (Chỉ cho phép sửa tên tài khoản)
             edited_df = st.data_editor(df_users[["User ID", "Tên tài khoản", "Mật khẩu", "Vai trò"]], key="user_table", disabled=["User ID"], hide_index=True)
 
-            # 📝 Cập nhật thông tin người dùng
             if st.button("💾 Lưu chỉnh sửa"):
                 for i, row in edited_df.iterrows():
                     user_id = users[i][0]
                     username = row["Tên tài khoản"]
-                    update_user_info(user_id, username, users[i][3])  # Giữ nguyên vai trò
+                    update_user_info(user_id, username, users[i][3])
                 st.success("✅ Thông tin người dùng đã được cập nhật!")
                 st.rerun()
 
-            # 🔄 Cập nhật mật khẩu
             st.subheader("🔄 Đặt lại mật khẩu")
-            selected_user = st.selectbox("Chọn tài khoản cần đổi mật khẩu", df_users["Tên tài khoản"].tolist())
-            new_password = st.text_input("🔑 Mật khẩu mới", type="password")
-            if st.button("🔄 Cập nhật mật khẩu"):
-                user_id = df_users[df_users["Tên tài khoản"] == selected_user]["User ID"].values[0]
-                update_user_password(user_id, new_password)
-                st.success(f"✅ Mật khẩu cho tài khoản **{selected_user}** đã được cập nhật!")
-                st.rerun()
 
-            # 🗑️ Xóa tài khoản
+            # Chọn tài khoản cần đổi mật khẩu
+            selected_user = st.selectbox("Chọn tài khoản cần đổi mật khẩu", df_users["Tên tài khoản"].tolist())
+
+            # Nhập mật khẩu mới
+            new_password = st.text_input("🔑 Mật khẩu mới", type="password")
+
+            # Kiểm tra mật khẩu tối thiểu 6 ký tự
+            if st.button("🔄 Cập nhật mật khẩu"):
+                if len(new_password) < 6:
+                    st.error("❌ Mật khẩu phải có ít nhất 6 ký tự!")
+                else:
+                    if update_user_password(selected_user, new_password):
+                        st.success(f"✅ Mật khẩu cho tài khoản **{selected_user}** đã được cập nhật!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Không tìm thấy tài khoản!")
+
+            
             st.subheader("🗑️ Xóa tài khoản")
+
+            # Chọn tài khoản cần xóa
             user_to_delete = st.selectbox("Chọn tài khoản cần xóa", df_users["Tên tài khoản"].tolist(), key="delete_user")
+
+            # Nút xóa tài khoản
             if st.button("🗑️ Xóa tài khoản", key="delete_btn"):
-                user_id = df_users[df_users["Tên tài khoản"] == user_to_delete]["User ID"].values[0]
-                delete_user(user_id)
+                delete_user(user_to_delete)
                 st.warning(f"🚨 Tài khoản **{user_to_delete}** đã bị xóa!")
                 st.rerun()
-
         else:
             st.info("📭 Hiện chưa có tài khoản nào trong hệ thống.")
+
+    # 🚀 **Tab 5: Lịch sử đăng nhập**
+    with tab5:
+        st.subheader("📜 Thống kê hoạt động của người dùng")
+
+        login_data = get_user_login_info()
+
+        if login_data:
+            # Tạo DataFrame từ dữ liệu truy vấn
+            df_logins = pd.DataFrame(
+                login_data,
+                columns=["Tên tài khoản", "Số lần đăng nhập", "Tổng số chức năng sử dụng", "Tổng thời gian (phút)", "Chi tiết chức năng"]
+            )
+
+            # Format lại hiển thị
+            df_logins["Tổng thời gian (phút)"] = df_logins["Tổng thời gian (phút)"].apply(lambda x: f"{x:.1f} phút")
+            
+            # Ẩn index và hiển thị toàn bộ nội dung với container width
+            st.dataframe(df_logins.drop(columns=["Chi tiết chức năng"]), hide_index=True, use_container_width=True)
+
+            # 🎯 **Chi tiết sử dụng chức năng**
+            with st.expander("📌 Chi tiết số lần dùng từng chức năng"):
+                for index, row in df_logins.iterrows():
+                    st.markdown(f"### 👤 {row['Tên tài khoản']}")
+                    if row["Chi tiết chức năng"]:
+                        for item in row["Chi tiết chức năng"].split("; "):
+                            st.write(f"- {item}")
+                    else:
+                        st.write("📭 Chưa có dữ liệu sử dụng chức năng.")
+                    st.divider()
+
+        else:
+            st.info("📭 Chưa có dữ liệu đăng nhập.")
