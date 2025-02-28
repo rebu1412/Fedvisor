@@ -26,18 +26,10 @@ Fedvisor is a web platform designed to assist students in their academic journey
   
 # 🚀 Installation Guide
 
-- **Clone repository**: 
+- **Clone repository**:
+  
 git clone https://github.com/your-repo/fedvisor.git
-cd fedvisor
 
-- **Install dependencies**: 
-pip install -r requirements.txt
-
-- **Run application**: 
-streamlit run app.py
-
-- **Clone repository**: 
-git clone https://github.com/your-repo/fedvisor.git
 cd fedvisor
 
 - **Install dependencies**: 
