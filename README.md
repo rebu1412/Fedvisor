@@ -23,7 +23,8 @@ Fedvisor is a web platform designed to assist students in their academic journey
 - Frontend: Streamlit
 - AI Chatbot: Gemini API
 - Deployment: Streamlit
-🚀 Installation Guide
+  
+# 🚀 Installation Guide
 
 - **Clone repository**: 
 git clone https://github.com/your-repo/fedvisor.git
