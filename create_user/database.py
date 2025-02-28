@@ -346,7 +346,7 @@ def get_user_login_info():
                     WHEN o.logout_time IS NOT NULL THEN 
                         (julianday(o.logout_time) - julianday(l.login_time)) * 60
                     ELSE 
-                        (julianday('now') - julianday(l.login_time)) * 60
+                        MAX(1, (julianday('now') - julianday(l.login_time)) * 60)
                 END
             ), 2) AS total_login_minutes,
             GROUP_CONCAT(f.action || ' (' || 
@@ -358,6 +358,7 @@ def get_user_login_info():
         ON l.username = f.username AND l.session_id = f.session_id
         GROUP BY l.username;
     """
+    
     cursor.execute(query)
     data = cursor.fetchall()
     conn.close()

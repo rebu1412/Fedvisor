@@ -10,7 +10,7 @@ def admin_stats():
     # 📥 Lấy dữ liệu từ database
     users = get_all_users()  # Trả về danh sách [(user_id, username, password, role)]
     usage_stats = get_usage_stats()  # Trả về danh sách {'Chức năng': Số lần sử dụng}
-    user_login_info = get_user_login_info()  # Trả về danh sách [(user_id, username, chức năng, tổng thời gian đăng nhập)]
+    login_data = get_user_login_info()  # Trả về danh sách [(user_id, username, chức năng, tổng thời gian đăng nhập)]
 
     # 🏆 Tổng số tài khoản
     total_users = len(users)
@@ -124,8 +124,6 @@ def admin_stats():
     # 🚀 **Tab 5: Lịch sử đăng nhập**
     with tab5:
         st.subheader("📜 Thống kê hoạt động của người dùng")
-
-        login_data = get_user_login_info()
 
         if login_data:
             # Tạo DataFrame từ dữ liệu truy vấn
