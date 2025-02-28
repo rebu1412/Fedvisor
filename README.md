@@ -28,7 +28,7 @@ Fedvisor is a web platform designed to assist students in their academic journey
 
 - **Clone repository**:
   
-git clone https://github.com/your-repo/fedvisor.git
+git clone https://github.com/rebu1412/Fedvisor.git
 
 cd fedvisor
 
