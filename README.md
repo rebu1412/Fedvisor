@@ -9,14 +9,14 @@ Fedvisor is a web platform designed to assist students in their academic journey
 - Job Support: Provides job and internship listings tailored to students’ fields of study.
 - CV Creation & Editing: Offers a fast CV builder with professional templates.
 - Feedback Channel: Allows users to submit feedback and suggestions for system improvement.
-- 
+  
 **🔹 Admin Dashboard:**
   
 - User Management: View a list of students, lecturers, and administrators.
 - Analytics & Reports: Track login activities and feature usage statistics.
 - Content Management: Publish news, announcements, and job postings.
 - Chatbot Monitoring: Monitor chatbot performance and update data for better efficiency.
-- 
+  
 **🛠️ Technologies Used:**
   
 - Backend: Python (FastAPI, SQLite/PostgreSQL)
