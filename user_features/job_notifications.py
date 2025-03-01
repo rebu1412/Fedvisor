@@ -18,7 +18,7 @@ def job_notifications():
             expander_key = f"viewed_{job_code}"  # Chìa khóa session để kiểm tra xem đã ghi nhận chưa
 
             # Mặc định expander đóng
-            with st.expander(f"📌 {title} #{job_code}", expanded=False):
+            with st.expander(f"📌 {title}", expanded=False):
                 # Nếu chưa ghi nhận lượt xem thì mới cập nhật database
                 if expander_key not in st.session_state:
                     track_usage(f"view_job_{job_code}")
