@@ -1,5 +1,5 @@
 import streamlit as st
-from create_user.database import get_approved_news
+from create_user.database import get_approved_news, track_usage
 
 def news():
     st.title("📰 Tin tức mới nhất")
@@ -42,6 +42,7 @@ def news():
             _, author, title, category, content, created_at, _, _ = record
 
             with st.expander(f"📌 {title} ({category}) - {created_at}"):
+                track_usage(f"view_news")
                 st.markdown(f"### 📰 **{title}**")  # Tăng kích thước tiêu đề
                 st.write(f"**✍️ Người đăng:** {author}")
                 st.write(f"**📅 Ngày đăng:** {created_at}")
