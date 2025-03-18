@@ -1,2 +1,3 @@
 google-generativeai
 plotly
+pdf2image
