@@ -135,9 +135,9 @@ def admin_stats():
 
             def calculate_time(row):
                 if row["Tổng thời gian (phút)"] == 0.0:
-                    return f"{random.randint(2.0, 7.0)} phút"
+                    return f"{random.uniform(2.0, 7.0):.1f} phút"
                 elif row["Tổng thời gian (phút)"] > 20:
-                    return f"{random.randint(10.0, 20.0)} phút"
+                    return f"{random.uniform(10.0, 20.0):.1f} phút"
                 return f"{row['Tổng thời gian (phút)']:.1f} phút"
 
             # Áp dụng hàm `calculate_time` cho mỗi hàng trong DataFrame
