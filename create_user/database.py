@@ -317,30 +317,28 @@ def track_activity(username, action):
     conn.close()
 
 def get_user_login_info():
-    """Lấy thông tin đăng nhập, tổng số chức năng sử dụng, tổng thời gian hoạt động và chi tiết từng chức năng"""
+    """Lấy thông tin đăng nhập, số lần đăng nhập và tổng thời gian hoạt động"""
     conn = connect_db()
     cursor = conn.cursor()
 
     query = """
         WITH login_times AS (
-            SELECT username, session_id, timestamp AS login_time
-            FROM user_activity_tracking
-            WHERE action = 'login'
+            SELECT u.username, u.user_code, u.name, l.session_id, l.timestamp AS login_time
+            FROM user_activity_tracking l
+            JOIN users u ON l.username = u.username
+            WHERE l.action = 'login'
         ),
         logout_times AS (
-            SELECT username, session_id, timestamp AS logout_time
-            FROM user_activity_tracking
-            WHERE action = 'logout'
-        ),
-        feature_usage AS (
-            SELECT username, session_id, action, timestamp
-            FROM user_activity_tracking
-            WHERE action LIKE 'use_%'
+            SELECT u.username, l.session_id, l.timestamp AS logout_time
+            FROM user_activity_tracking l
+            JOIN users u ON l.username = u.username
+            WHERE l.action = 'logout'
         )
         SELECT 
             l.username,
+            l.user_code,
+            l.name,
             COUNT(DISTINCT l.session_id) AS total_logins,
-            COUNT(DISTINCT f.action) AS total_features_used,
             ROUND(SUM(
                 CASE 
                     WHEN o.logout_time IS NOT NULL THEN 
@@ -348,15 +346,11 @@ def get_user_login_info():
                     ELSE 
                         MAX(1, (julianday('now') - julianday(l.login_time)) * 60)
                 END
-            ), 2) AS total_login_minutes,
-            GROUP_CONCAT(f.action || ' (' || 
-                ROUND((julianday(f.timestamp) - julianday(l.login_time)) * 1440, 2) || ' phút)', ' | ') AS feature_details
+            ), 2) AS total_login_minutes
         FROM login_times l
         LEFT JOIN logout_times o 
         ON l.username = o.username AND l.session_id = o.session_id
-        LEFT JOIN feature_usage f
-        ON l.username = f.username AND l.session_id = f.session_id
-        GROUP BY l.username;
+        GROUP BY l.username, l.user_code, l.name;
     """
     
     cursor.execute(query)
@@ -364,7 +358,6 @@ def get_user_login_info():
     conn.close()
 
     return data
-
 
 
 def log_user_activity(user_id, action):

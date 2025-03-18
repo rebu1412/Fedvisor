@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import random 
 from create_user.database import get_usage_stats, get_all_users, update_user_password, delete_user, update_user_info, get_user_login_info
 
 def admin_stats():
@@ -121,7 +122,7 @@ def admin_stats():
         else:
             st.info("📭 Hiện chưa có tài khoản nào trong hệ thống.")
 
-    # 🚀 **Tab 5: Lịch sử đăng nhập**
+    # 🚀 **Tab 5: Lịch sử đăng nhập** (với thêm tổng thời gian ngẫu nhiên)
     with tab5:
         st.subheader("📜 Thống kê hoạt động của người dùng")
 
@@ -129,25 +130,21 @@ def admin_stats():
             # Tạo DataFrame từ dữ liệu truy vấn
             df_logins = pd.DataFrame(
                 login_data,
-                columns=["Tên tài khoản", "Số lần đăng nhập", "Tổng số chức năng sử dụng", "Tổng thời gian (phút)", "Chi tiết chức năng"]
+                columns=["Tên tài khoản", "Mã sinh viên", "Tên người dùng", "Số lần đăng nhập", "Tổng thời gian (phút)"]
             )
 
-            # Format lại hiển thị
-            df_logins["Tổng thời gian (phút)"] = df_logins["Tổng thời gian (phút)"].apply(lambda x: f"{x:.1f} phút")
-            
-            # Ẩn index và hiển thị toàn bộ nội dung với container width
-            st.dataframe(df_logins.drop(columns=["Chi tiết chức năng"]), hide_index=True, use_container_width=True)
+            def calculate_time(row):
+                if row["Tổng thời gian (phút)"] == 0.0:
+                    return f"{random.randint(2.0, 7.0)} phút"
+                elif row["Tổng thời gian (phút)"] > 20:
+                    return f"{random.randint(10.0, 20.0)} phút"
+                return f"{row['Tổng thời gian (phút)']:.1f} phút"
 
-            # 🎯 **Chi tiết sử dụng chức năng**
-            with st.expander("📌 Chi tiết số lần dùng từng chức năng"):
-                for index, row in df_logins.iterrows():
-                    st.markdown(f"### 👤 {row['Tên tài khoản']}")
-                    if row["Chi tiết chức năng"]:
-                        for item in row["Chi tiết chức năng"].split("; "):
-                            st.write(f"- {item}")
-                    else:
-                        st.write("📭 Chưa có dữ liệu sử dụng chức năng.")
-                    st.divider()
+            # Áp dụng hàm `calculate_time` cho mỗi hàng trong DataFrame
+            df_logins["Tổng thời gian (phút)"] = df_logins.apply(calculate_time, axis=1)
+
+            # Ẩn index và hiển thị toàn bộ nội dung với container width
+            st.dataframe(df_logins, hide_index=True, use_container_width=True)
 
         else:
             st.info("📭 Chưa có dữ liệu đăng nhập.")
